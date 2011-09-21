@@ -104,3 +104,88 @@ sub _fields_from_object {
 }
 
 1;
+
+=pod
+
+=head1 NAME
+
+Parse::FieldPath
+
+=head1 ABSTRACT
+
+Parses an XPath inspired field list and extracts those fields from an object
+hierarchy.
+
+Based on the "fields" parameter for the Google+ API:
+http://developers.google.com/+/api/
+
+=head1 SYNOPSIS
+
+Say you have an object, with some sub-objects, that's initialized like this:
+
+  my $cow = Cow->new();
+  $cow->color("black and white");
+  $cow->tail(Cow::Tail->new(floppy => 1));
+  $cow->mouth(Cow::Tounge->new(
+    tounge => Cow::Tounge->new,
+    teeth  => Cow::Teeth->new,
+  );
+
+And you want a hash containing some of those fields (perhaps to pass to
+JSON::XS, or something). Then you can do this:
+
+  use Parse::FieldPath qw/extract_fields/;
+
+  my $cow_hash = extract_fields($cow, "color,tail/floppy");
+  # $cow_hash is now:
+  # {
+  #   color => 'black and white',
+  #   tail  => {
+  #     floppy => 1,
+  #   }
+  # }
+
+=head1 SYNTAX
+
+(To be written)
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item B<extract_fields ($object, $field_path)>
+
+Parses the field_path and returns the fields requested from $object.
+
+=item B<build_tree ($field_path)>
+
+Parses the field_path and returns a tree structure describing it.
+
+=back
+
+=head1 BUGS / LIMITATIONS
+
+=over 4
+
+=item Doesn't support arrays currently
+
+=item Needs more callbacks
+
+=item Assumes that objects are blessed hashrefs (which isn't necessarily true)
+
+=item "field/*" doesn't work very well at present
+
+=back
+
+=head1 AUTHOR
+
+Paul Boyd <pboyd@dev3l.net>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Paul Boyd.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
