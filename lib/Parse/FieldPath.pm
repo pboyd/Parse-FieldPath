@@ -4,9 +4,11 @@ use strict;
 use warnings;
 
 use Exporter qw/import unimport/;
-our @EXPORT_OK = qw/build_tree/;
+our @EXPORT_OK = qw/build_tree extract_fields/;
 
 use Parse::RecDescent;
+use Scalar::Util;
+use Carp;
 
 sub _parser {
     my $grammar = q{
@@ -56,6 +58,49 @@ sub build_tree {
     my ($field_path) = @_;
     my $parser = _parser;
     return $parser->parse($field_path);
+}
+
+sub extract_fields {
+    my ($obj, $field_path) = @_;
+
+    croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
+
+    my $tree = build_tree($field_path);
+    return _fields_from_object($obj, $tree);
+}
+
+sub _fields_from_object {
+    my ($obj, $tree) = @_;
+
+    my %fields;
+    for my $field (keys %$tree) {
+        my $branch = $tree->{$field};
+        my $value = $obj->$field;
+        if (Scalar::Util::blessed($value)) {
+            if (%$branch) {
+                $fields{$field} = _fields_from_object($value, $branch);
+            }
+            else {
+                # We've got an object, but don't know which fields to grab.
+                # FIXME: This is almost certainly the wrong thing to do. It should
+                # figure out what the available fields are and only return those.
+                $fields{$field} = {%$value};
+            }
+        }
+        else {
+            if (%$branch) {
+                # Unblessed object, but a sub-object has been requested.
+                # Setting it to undef, maybe an error should be thrown here
+                # though?
+                $fields{$field} = undef;
+            }
+            else {
+                $fields{$field} = $value;
+            }
+        }
+    }
+
+    return \%fields;
 }
 
 1;
