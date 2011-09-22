@@ -1,5 +1,7 @@
 package Parse::FieldPath;
 
+# ABSTRACT: Perl module to extract fields from objects 
+
 use strict;
 use warnings;
 
