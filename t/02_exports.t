@@ -3,5 +3,5 @@ use warnings;
 
 use Test::More tests => 1;
 
-use Parse::FieldPath qw/build_tree/;
-can_ok( __PACKAGE__, 'build_tree' );
+use Parse::FieldPath qw/extract_fields/;
+can_ok( __PACKAGE__, 'extract_fields' );

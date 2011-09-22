@@ -13,19 +13,19 @@ use Carp;
 
 use Parse::FieldPath::Parser;
 
-sub build_tree {
-    my ($field_path) = @_;
-    my $parser = Parse::FieldPath::Parser->new();
-    return $parser->parse($field_path);
-}
-
 sub extract_fields {
     my ($obj, $field_path) = @_;
 
     croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
 
-    my $tree = build_tree($field_path);
+    my $tree = _build_tree($field_path);
     return _fields_from_object($obj, $tree);
+}
+
+sub _build_tree {
+    my ($field_path) = @_;
+    my $parser = Parse::FieldPath::Parser->new();
+    return $parser->parse($field_path);
 }
 
 sub _fields_from_object {
@@ -115,10 +115,6 @@ JSON::XS, or something). Then you can do this:
 =item B<extract_fields ($object, $field_path)>
 
 Parses the field_path and returns the fields requested from $object.
-
-=item B<build_tree ($field_path)>
-
-Parses the field_path and returns a tree structure describing it.
 
 =back
 
