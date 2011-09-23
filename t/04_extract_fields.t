@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Test::Deep;
 use Test::MockObject;
 
@@ -26,3 +26,4 @@ cmp_deeply( extract_fields( $obj, 'x' ), { x => { hash_key => 1} } );
 
 cmp_deeply( extract_fields( $obj, 'x/a,x/b' ), { x => { a => 'x', b => 'y' } } );
 cmp_deeply( extract_fields( $obj, 'x/x/x/b' ), { x => { x => { x => { b => 'y' } } } } );
+cmp_deeply( extract_fields( $obj, 'x/*' ), { x => { hash_key => 1 } } );

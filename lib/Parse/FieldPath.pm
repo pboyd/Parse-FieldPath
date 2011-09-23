@@ -36,6 +36,10 @@ sub _fields_from_object {
         my $branch = $tree->{$field};
         my $value = $obj->$field;
         if (Scalar::Util::blessed($value)) {
+
+            # Treat a/b/* just like a/b
+            delete $branch->{'*'} if (exists $branch->{'*'});
+
             if (%$branch) {
                 $fields{$field} = _fields_from_object($value, $branch);
             }
@@ -127,8 +131,6 @@ Parses the field_path and returns the fields requested from $object.
 =item Needs more callbacks
 
 =item Assumes that objects are blessed hashrefs (which isn't necessarily true)
-
-=item "field/*" doesn't work very well at present
 
 =back
 
