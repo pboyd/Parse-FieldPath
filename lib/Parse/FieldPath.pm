@@ -19,7 +19,7 @@ sub extract_fields {
     croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
 
     my $tree = _build_tree($field_path);
-    return _fields_from_object($obj, $tree);
+    return _extract($obj, $tree);
 }
 
 sub _build_tree {
@@ -28,7 +28,7 @@ sub _build_tree {
     return $parser->parse($field_path);
 }
 
-sub _fields_from_object {
+sub _extract {
     my ($obj, $tree) = @_;
 
     my %fields;
@@ -41,13 +41,25 @@ sub _fields_from_object {
             delete $branch->{'*'} if (exists $branch->{'*'});
 
             if (%$branch) {
-                $fields{$field} = _fields_from_object($value, $branch);
+                $fields{$field} = _extract($value, $branch);
             }
             else {
-                # We've got an object, but don't know which fields to grab.
-                # FIXME: This is almost certainly the wrong thing to do. It should
-                # figure out what the available fields are and only return those.
-                $fields{$field} = {%$value};
+
+                # We've got an object, but not a list of fields. Get everything.
+                my $all_fields = [];
+                $all_fields = $value->field_list()
+                  if ( $value->can('field_list') );
+
+                die "Expected $value->field_list to return an arrayref"
+                  unless Scalar::Util::reftype($all_fields)
+                      && Scalar::Util::reftype($all_fields) eq 'ARRAY';
+
+                for my $sub_field (@$all_fields) {
+                    my %sub_branch = (
+                        $sub_field => {},
+                    );
+                    $fields{$field}->{$sub_field} = _extract($value, \%sub_branch)->{$sub_field};
+                }
             }
         }
         else {

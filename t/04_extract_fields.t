@@ -11,19 +11,25 @@ eval { extract_fields("") };
 like( $@, qr/extract_fields needs an object/ );
 
 my $obj = Test::MockObject->new();
-$obj->{hash_key} = 1;
 $obj->set_always( a => 'x' );
 $obj->set_always( b => 'y' );
-$obj->set_always( x => $obj );
+$obj->set_always( field_list => [qw/a b x/] );
+
+my $obj2 = Test::MockObject->new();
+$obj2->set_always( a => 1 );
+$obj2->set_always( b => 2 );
+$obj2->set_always( field_list => [qw/a b/] );
+
+$obj->set_always( x => $obj2 );
 
 cmp_deeply( extract_fields( $obj, 'a' ), { a => 'x' } );
 cmp_deeply( extract_fields( $obj, 'a,b' ), { a => 'x', b => 'y' } );
-cmp_deeply( extract_fields( $obj, 'x/a' ), { x => { a => 'x' } } );
-cmp_deeply( extract_fields( $obj, 'x(a)' ), { x => { a => 'x' } } );
-cmp_deeply( extract_fields( $obj, 'x(a,b)' ), { x => { a => 'x', b => 'y' } } );
+cmp_deeply( extract_fields( $obj, 'x/a' ), { x => { a => 1 } } );
+cmp_deeply( extract_fields( $obj, 'x(a)' ), { x => { a => 1 } } );
+cmp_deeply( extract_fields( $obj, 'x(a,b)' ), { x => { a => 1, b => 2 } } );
 cmp_deeply( extract_fields( $obj, 'a/x' ), { a => undef } );
-cmp_deeply( extract_fields( $obj, 'x' ), { x => { hash_key => 1} } );
+cmp_deeply( extract_fields( $obj, 'x' ), { x => { a => 1, b => 2 } } );
 
-cmp_deeply( extract_fields( $obj, 'x/a,x/b' ), { x => { a => 'x', b => 'y' } } );
-cmp_deeply( extract_fields( $obj, 'x/x/x/b' ), { x => { x => { x => { b => 'y' } } } } );
-cmp_deeply( extract_fields( $obj, 'x/*' ), { x => { hash_key => 1 } } );
+cmp_deeply( extract_fields( $obj, 'x/a,x/b' ), { x => { a => 1, b => 2 } } );
+#cmp_deeply( extract_fields( $obj, 'x/x/x/b' ), { x => { x => { x => { b => 'y' } } } } );
+cmp_deeply( extract_fields( $obj, 'x/*' ), { x => { a => 1, b => 2 } } );
