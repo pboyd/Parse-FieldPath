@@ -142,10 +142,9 @@ Parses the field_path and returns the fields requested from $object.
 
 =back
 
-=head1 CONTRIBUTING
+=head1 GitHub
 
-If your interested in fixing a bug, adding a feature or bashing the code, look
-on GitHub: https://github.com/pboyd/Parse-FieldPath
+https://github.com/pboyd/Parse-FieldPath
 
 =head1 AUTHOR
 
