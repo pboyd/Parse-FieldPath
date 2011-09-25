@@ -45,7 +45,7 @@ sub _extract {
       unless Scalar::Util::reftype($all_fields)
           && Scalar::Util::reftype($all_fields) eq 'ARRAY';
 
-    unless (%$tree) {
+    if (exists $tree->{'*'} || !%$tree) {
 
         # We've got an object, but not a list of fields. Get everything.
         $tree->{$_} = {} for @$all_fields;
@@ -62,10 +62,6 @@ sub _extract {
         my $branch = $tree->{$field};
         my $value  = $obj->$field;
         if ( Scalar::Util::blessed($value) ) {
-
-            # Treat a/b/* just like a/b
-            delete $branch->{'*'} if ( exists $branch->{'*'} );
-
             $fields{$field} = _extract( $value, $branch, $recurse_count );
         }
         else {

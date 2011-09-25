@@ -28,7 +28,7 @@ fields: field(s /,/)
 
 field: field_list | field_path | <error>
 
-field_name: /\w+/ | '*' | <error?>
+field_name: /\w+/ | '*' | '' | <error?>
 field_list: field_path '(' fields ')'
     {
         sub deepest {
@@ -49,6 +49,6 @@ field_path: field_name(s /\//)
 
         # Turn qw/a b c/ into { a => { b => { c => {} } } }
         my $fields = {};
-        List::Util::reduce { $a->{$b} = {} } $fields, @{$item{'field_name(s)'}};
+        List::Util::reduce { $a->{$b} = {} if $b } $fields, @{$item{'field_name(s)'}};
         $return = $fields;
     }

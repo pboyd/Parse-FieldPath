@@ -239,7 +239,7 @@ sub Parse::RecDescent::Parse::FieldPath::Parser::field_path
 
         # Turn qw/a b c/ into { a => { b => { c => {} } } }
         my $fields = {};
-        List::Util::reduce { $a->{$b} = {} } $fields, @{$item{'field_name(s)'}};
+        List::Util::reduce { $a->{$b} = {} if $b } $fields, @{$item{'field_name(s)'}};
         $return = $fields;
     };
         unless (defined $_tok)
@@ -1056,7 +1056,7 @@ sub Parse::RecDescent::Parse::FieldPath::Parser::field_name
     my $text;
     my $lastsep="";
     my $current_match;
-    my $expectation = new Parse::RecDescent::Expectation(q{/\\w+/, or '*'});
+    my $expectation = new Parse::RecDescent::Expectation(q{/\\w+/, or '*', or ''});
     $expectation->at($_[1]);
     
     my $thisline;
@@ -1172,6 +1172,60 @@ sub Parse::RecDescent::Parse::FieldPath::Parser::field_name
     }
 
 
+    while (!$_matched && !$commit)
+    {
+        
+        Parse::RecDescent::_trace(q{Trying production: ['']},
+                      Parse::RecDescent::_tracefirst($_[1]),
+                      q{field_name},
+                      $tracelevel)
+                        if defined $::RD_TRACE;
+        my $thisprod = $thisrule->{"prods"}[2];
+        $text = $_[1];
+        my $_savetext;
+        @item = (q{field_name});
+        %item = (__RULE__ => q{field_name});
+        my $repcount = 0;
+
+
+        Parse::RecDescent::_trace(q{Trying terminal: ['']},
+                      Parse::RecDescent::_tracefirst($text),
+                      q{field_name},
+                      $tracelevel)
+                        if defined $::RD_TRACE;
+        $lastsep = "";
+        $expectation->is(q{})->at($text);
+        
+
+        unless ($text =~ s/\A($skip)/$lastsep=$1 and ""/e and   $text =~ m/\A/)
+        {
+            
+            $expectation->failed();
+            Parse::RecDescent::_trace(qq{<<Didn't match terminal>>},
+                          Parse::RecDescent::_tracefirst($text))
+                            if defined $::RD_TRACE;
+            last;
+        }
+		$current_match = substr($text, $-[0], $+[0] - $-[0]);
+        substr($text,0,length($current_match),q{});
+        Parse::RecDescent::_trace(q{>>Matched terminal<< (return value: [}
+                        . $current_match . q{])},
+                          Parse::RecDescent::_tracefirst($text))
+                            if defined $::RD_TRACE;
+        push @item, $item{__STRING1__}=$current_match;
+        
+
+
+        Parse::RecDescent::_trace(q{>>Matched production: ['']<<},
+                      Parse::RecDescent::_tracefirst($text),
+                      q{field_name},
+                      $tracelevel)
+                        if defined $::RD_TRACE;
+        $_matched = 1;
+        last;
+    }
+
+
     while (!$_matched)
     {
         
@@ -1180,7 +1234,7 @@ sub Parse::RecDescent::Parse::FieldPath::Parser::field_name
                       q{field_name},
                       $tracelevel)
                         if defined $::RD_TRACE;
-        my $thisprod = $thisrule->{"prods"}[2];
+        my $thisprod = $thisrule->{"prods"}[3];
         
         my $_savetext;
         @item = (q{field_name});
@@ -1598,7 +1652,7 @@ package Parse::FieldPath::Parser; sub new { my $self = bless( {
 
         # Turn qw/a b c/ into { a => { b => { c => {} } } }
         my $fields = {};
-        List::Util::reduce { $a->{$b} = {} } $fields, @{$item{\'field_name(s)\'}};
+        List::Util::reduce { $a->{$b} = {} if $b } $fields, @{$item{\'field_name(s)\'}};
         $return = $fields;
     }'
                                                                                                  }, 'Parse::RecDescent::Action' )
@@ -1852,6 +1906,25 @@ package Parse::FieldPath::Parser; sub new { my $self = bless( {
                                                                            }, 'Parse::RecDescent::Production' ),
                                                                     bless( {
                                                                              'number' => '2',
+                                                                             'strcount' => 1,
+                                                                             'dircount' => 0,
+                                                                             'uncommit' => undef,
+                                                                             'error' => undef,
+                                                                             'patcount' => 0,
+                                                                             'actcount' => 0,
+                                                                             'items' => [
+                                                                                          bless( {
+                                                                                                   'pattern' => '',
+                                                                                                   'hashname' => '__STRING1__',
+                                                                                                   'description' => '\'\'',
+                                                                                                   'lookahead' => 0,
+                                                                                                   'line' => 16
+                                                                                                 }, 'Parse::RecDescent::Literal' )
+                                                                                        ],
+                                                                             'line' => 16
+                                                                           }, 'Parse::RecDescent::Production' ),
+                                                                    bless( {
+                                                                             'number' => '3',
                                                                              'strcount' => 0,
                                                                              'dircount' => 1,
                                                                              'uncommit' => 0,

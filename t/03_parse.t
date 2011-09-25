@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 11;
 use Test::Deep;
 
 use Parse::FieldPath;
@@ -10,6 +10,8 @@ sub build_tree {
     goto &Parse::FieldPath::_build_tree;
 }
 
+cmp_deeply( build_tree(''), { } );
+cmp_deeply( build_tree('*'), { '*' => {} } );
 cmp_deeply( build_tree('a'), { a => {} } );
 cmp_deeply( build_tree('a,b'), { a => {}, b => {} } );
 cmp_deeply( build_tree('a(b)'),   { a => { b => {} } } );
