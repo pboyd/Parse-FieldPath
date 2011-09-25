@@ -1,0 +1,8 @@
+* "a/*/b" should request fields named "b" from every sub-object of "a".
+* An empty fieldpath, or just "*", should request everything.
+* "a/b" where "a" returns an array should result in calling "b" on every item
+  in "a".
+* It should notify the object about which fields it's about to ask for (so that
+  data can be fetched, or whatever).
+* Should only allow fields in "all_fields()" to be fetched.
+* Figure out some comprimise for "all_fields()" and third-party objects.

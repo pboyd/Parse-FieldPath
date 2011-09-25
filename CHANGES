@@ -1,0 +1,4 @@
+0.001 2011-09-21
+    * First release
+    * Parser is mostly working
+    * Major portions of the syntax are unimplemented

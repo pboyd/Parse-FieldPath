@@ -142,17 +142,10 @@ Parses the field_path and returns the fields requested from $object.
 
 =back
 
-=head1 BUGS / LIMITATIONS
+=head1 CONTRIBUTING
 
-=over 4
-
-=item Doesn't support arrays currently
-
-=item Needs more callbacks
-
-=item Assumes that objects are blessed hashrefs (which isn't necessarily true)
-
-=back
+If your interested in fixing a bug, adding a feature or bashing the code, look
+on GitHub: https://github.com/pboyd/Parse-FieldPath
 
 =head1 AUTHOR
 
