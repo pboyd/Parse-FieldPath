@@ -1,6 +1,6 @@
 package Parse::FieldPath;
 
-# ABSTRACT: Perl module to extract fields from objects 
+# ABSTRACT: Perl module to extract fields from objects
 
 use strict;
 use warnings;
@@ -13,13 +13,16 @@ use Carp;
 
 use Parse::FieldPath::Parser;
 
+# Maximum number of times to allow _extract to recurse.
+use constant RECURSION_LIMIT => 512;
+
 sub extract_fields {
-    my ($obj, $field_path) = @_;
+    my ( $obj, $field_path ) = @_;
 
     croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
 
     my $tree = _build_tree($field_path);
-    return _extract($obj, $tree);
+    return _extract( $obj, $tree );
 }
 
 sub _build_tree {
@@ -29,19 +32,23 @@ sub _build_tree {
 }
 
 sub _extract {
-    my ($obj, $tree) = @_;
+    my ( $obj, $tree, $recurse_count ) = @_;
+
+    $recurse_count ||= 0;
+    $recurse_count++;
+    die "Maximum recursion limit reached" if $recurse_count >= RECURSION_LIMIT;
 
     my %fields;
-    for my $field (keys %$tree) {
+    for my $field ( keys %$tree ) {
         my $branch = $tree->{$field};
-        my $value = $obj->$field;
-        if (Scalar::Util::blessed($value)) {
+        my $value  = $obj->$field;
+        if ( Scalar::Util::blessed($value) ) {
 
             # Treat a/b/* just like a/b
-            delete $branch->{'*'} if (exists $branch->{'*'});
+            delete $branch->{'*'} if ( exists $branch->{'*'} );
 
             if (%$branch) {
-                $fields{$field} = _extract($value, $branch);
+                $fields{$field} = _extract( $value, $branch, $recurse_count );
             }
             else {
 
@@ -55,15 +62,16 @@ sub _extract {
                       && Scalar::Util::reftype($all_fields) eq 'ARRAY';
 
                 for my $sub_field (@$all_fields) {
-                    my %sub_branch = (
-                        $sub_field => {},
-                    );
-                    $fields{$field}->{$sub_field} = _extract($value, \%sub_branch)->{$sub_field};
+                    my %sub_branch = ( $sub_field => {}, );
+                    $fields{$field}->{$sub_field} =
+                      _extract( $value, \%sub_branch, $recurse_count )
+                      ->{$sub_field};
                 }
             }
         }
         else {
             if (%$branch) {
+
                 # Unblessed object, but a sub-object has been requested.
                 # Setting it to undef, maybe an error should be thrown here
                 # though?
