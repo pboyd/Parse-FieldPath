@@ -9,6 +9,7 @@ use Exporter qw/import unimport/;
 our @EXPORT_OK = qw/build_tree extract_fields/;
 
 use Scalar::Util;
+use List::Util;
 use Carp;
 
 use Parse::FieldPath::Parser;
@@ -38,8 +39,24 @@ sub _extract {
     $recurse_count++;
     die "Maximum recursion limit reached" if $recurse_count >= RECURSION_LIMIT;
 
+    my $all_fields = [];
+    $all_fields = $obj->field_list()
+      if ( $obj->can('field_list') );
+
+    die "Expected $obj->field_list to return an arrayref"
+      unless Scalar::Util::reftype($all_fields)
+          && Scalar::Util::reftype($all_fields) eq 'ARRAY';
+
+    unless (%$tree) {
+        # We've got an object, but not a list of fields. Get everything.
+        $tree->{$_} = {} for @$all_fields;
+    }
+
     my %fields;
     for my $field ( keys %$tree ) {
+        # Only accept fields that have been explicitly allowed
+        next unless List::Util::first { $_ eq $field} @$all_fields;
+
         my $branch = $tree->{$field};
         my $value  = $obj->$field;
         if ( Scalar::Util::blessed($value) ) {
@@ -47,27 +64,7 @@ sub _extract {
             # Treat a/b/* just like a/b
             delete $branch->{'*'} if ( exists $branch->{'*'} );
 
-            if (%$branch) {
-                $fields{$field} = _extract( $value, $branch, $recurse_count );
-            }
-            else {
-
-                # We've got an object, but not a list of fields. Get everything.
-                my $all_fields = [];
-                $all_fields = $value->field_list()
-                  if ( $value->can('field_list') );
-
-                die "Expected $value->field_list to return an arrayref"
-                  unless Scalar::Util::reftype($all_fields)
-                      && Scalar::Util::reftype($all_fields) eq 'ARRAY';
-
-                for my $sub_field (@$all_fields) {
-                    my %sub_branch = ( $sub_field => {}, );
-                    $fields{$field}->{$sub_field} =
-                      _extract( $value, \%sub_branch, $recurse_count )
-                      ->{$sub_field};
-                }
-            }
+            $fields{$field} = _extract( $value, $branch, $recurse_count );
         }
         else {
             if (%$branch) {
