@@ -1,6 +1,5 @@
-* It should notify the object about which fields it's about to ask for (so that
-  data can be fetched, or whatever).
 * An empty fieldpath, or just "*", should request everything.
+* Moose role to provide all_fields() and extract_fields().
 * "a/b" where "a" returns an array should result in calling "b" on every item
   in "a".
 * "a/*/b" should request fields named "b" from every sub-object of "a".

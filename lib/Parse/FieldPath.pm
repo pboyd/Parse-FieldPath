@@ -23,7 +23,7 @@ sub extract_fields {
     croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
 
     my $tree = _build_tree($field_path);
-    return _extract( $obj, $tree );
+    return _extract( $obj, $tree, 0 );
 }
 
 sub _build_tree {
@@ -35,27 +35,29 @@ sub _build_tree {
 sub _extract {
     my ( $obj, $tree, $recurse_count ) = @_;
 
-    $recurse_count ||= 0;
     $recurse_count++;
-    die "Maximum recursion limit reached" if $recurse_count >= RECURSION_LIMIT;
+    die "Maximum recursion limit reached" if $recurse_count > RECURSION_LIMIT;
 
     my $all_fields = [];
-    $all_fields = $obj->field_list()
-      if ( $obj->can('field_list') );
+    $all_fields = $obj->field_list() if $obj->can('field_list');
 
     die "Expected $obj->field_list to return an arrayref"
       unless Scalar::Util::reftype($all_fields)
           && Scalar::Util::reftype($all_fields) eq 'ARRAY';
 
     unless (%$tree) {
+
         # We've got an object, but not a list of fields. Get everything.
         $tree->{$_} = {} for @$all_fields;
     }
 
+    $obj->fields_requested( [ keys %$tree ] ) if $obj->can('fields_requested');
+
     my %fields;
     for my $field ( keys %$tree ) {
+
         # Only accept fields that have been explicitly allowed
-        next unless List::Util::first { $_ eq $field} @$all_fields;
+        next unless List::Util::first { $_ eq $field } @$all_fields;
 
         my $branch = $tree->{$field};
         my $value  = $obj->$field;
