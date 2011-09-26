@@ -123,17 +123,63 @@ JSON::XS, or something). Then you can do this:
   #   }
   # }
 
-=head1 SYNTAX
-
-(To be written)
-
 =head1 FUNCTIONS
 
 =over 4
 
 =item B<extract_fields ($object, $field_path)>
 
-Parses the field_path and returns the fields requested from $object.
+Parses the C<field_path> and returns a hashref with the fields requested from
+C<$object>.
+
+C<$object>, and any sub-objects, will need to define a method called
+C<all_fields()>. See L<CALLBACKS> for details.
+
+C<field_path> is a string describing the fields to return. Each field is
+separated by a comma, e.g. "a,b" will return fields "a" and "b".
+
+To request a field from a sub-objects, use the form "subobject/field". If more
+than one field from a sub-object is required, put the field names in
+parenthesis, "subobject(field1,field2)".
+
+C<field_path> can go as deep as necessary, for example, this works fine:
+"a/b/c(d/e,f)"
+
+=back
+
+=head1 CALLBACKS
+
+=over 4
+
+=item B<all_fields()>
+
+A method called C<all_fields()> should be defined for any object (including
+sub-objects), that will be used with this module. It needs to return an
+arrayref containing all the valid fields. Any field requested that's not in the
+list returned by C<all_fields()> will be skipped.
+
+A simple implementation would be:
+
+  sub all_fields {
+      my ($self) = @_;
+      return [qw/field1 field2/];
+  }
+
+If the list doesn't change, a constant will work too:
+
+  use constant all_fields => [qw/field1 field2/];
+
+This method is required because simply allowing any method to be called would
+be dangerous (e.g. if your object had a "delete_everything()" method, or
+something). It's also necessary to know which fields constitute "everything"
+for the object.
+
+=item B<requested_fields($field_list)>
+
+Called on an object right before the accessor methods are called. It's passed a
+list of fields that are about to be requested. This method is completely
+optional. It's intended to allow the object to fetch anything it needs to, in
+order to make the requested data available.
 
 =back
 
