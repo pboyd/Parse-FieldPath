@@ -30,6 +30,7 @@ Moose role to provide an C<extract_fields> method.
   package Boris;
 
   use Moose;
+  with 'Parse::FieldPath::Role';
 
   has plan => ( is => 'rw' );
   has tnt => ( is => 'rw' );
