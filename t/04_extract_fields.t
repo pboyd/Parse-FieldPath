@@ -13,12 +13,12 @@ like( $@, qr/extract_fields needs an object/ );
 my $obj = Test::MockObject->new();
 $obj->set_always( a => 'x' );
 $obj->set_always( b => 'y' );
-$obj->set_always( field_list => [qw/a b x/] );
+$obj->set_always( all_fields => [qw/a b x/] );
 
 my $obj2 = Test::MockObject->new();
 $obj2->set_always( a => 1 );
 $obj2->set_always( b => 2 );
-$obj2->set_always( field_list => [qw/a b/] );
+$obj2->set_always( all_fields => [qw/a b/] );
 
 $obj->set_always( x => $obj2 );
 
