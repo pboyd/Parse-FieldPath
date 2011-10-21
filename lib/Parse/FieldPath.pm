@@ -8,7 +8,7 @@ use warnings;
 use Exporter qw/import unimport/;
 our @EXPORT_OK = qw/extract_fields/;
 
-use Scalar::Util;
+use Scalar::Util qw/reftype blessed/;
 use List::Util;
 use Carp;
 
@@ -20,7 +20,7 @@ use constant RECURSION_LIMIT => 512;
 sub extract_fields {
     my ( $obj, $field_path ) = @_;
 
-    croak "extract_fields needs an object" unless Scalar::Util::blessed($obj);
+    croak "extract_fields needs an object" unless blessed($obj);
 
     my $tree = _build_tree($field_path);
     return _extract( $obj, $tree, 0 );
@@ -42,10 +42,10 @@ sub _extract {
     $all_fields = $obj->all_fields() if $obj->can('all_fields');
 
     die "Expected $obj->all_fields to return an arrayref"
-      unless Scalar::Util::reftype($all_fields)
-          && Scalar::Util::reftype($all_fields) eq 'ARRAY';
+      unless reftype($all_fields)
+          && reftype($all_fields) eq 'ARRAY';
 
-    if (exists $tree->{'*'} || !%$tree) {
+    if ( exists $tree->{'*'} || !%$tree ) {
 
         # We've got an object, but not a list of fields. Get everything.
         $tree->{$_} = {} for @$all_fields;
@@ -61,8 +61,12 @@ sub _extract {
 
         my $branch = $tree->{$field};
         my $value  = $obj->$field;
-        if ( Scalar::Util::blessed($value) ) {
+        if ( blessed($value) ) {
             $fields{$field} = _extract( $value, $branch, $recurse_count );
+        }
+        elsif ( reftype($value) && reftype($value) eq 'ARRAY' ) {
+            $fields{$field} =
+              [ map { _extract( $_, $branch, $recurse_count ) } @{$value} ];
         }
         else {
             if (%$branch) {

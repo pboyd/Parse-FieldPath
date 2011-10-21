@@ -1,4 +1,2 @@
-* "a/b" where "a" returns an array should result in calling "b" on every item
-  in "a".
 * "a/*/b" should request fields named "b" from every sub-object of "a".
 * Figure out some comprimise for "all_fields()" and third-party objects.
