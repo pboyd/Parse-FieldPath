@@ -2,6 +2,7 @@
     * Added Parse::FieldPath::Role
     * Support for arrays. "array_field/subfield" returns "subfield" from every
       object in array.
+    * Extract data from hashrefs, instead of just objects.
 
 0.003 2011-09-26
     * Bug fix. The method to get the full list of available fields was
